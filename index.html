@@ -120,6 +120,7 @@
         .image-area { flex: 1; min-height: 160px; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; background: #f0efe8; }
         .image-area .room-photo { max-width: 100%; max-height: 100%; width: auto; height: auto; object-fit: contain; display: none; }
         .image-area .image-label { position: absolute; bottom: 12px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.72); color: #fff; padding: 5px 14px; border-radius: 4px; font-size: 11px; font-weight: 500; letter-spacing: 0.3px; pointer-events: none; white-space: nowrap; display: none; z-index: 5; }
+        .ai-watermark { position: absolute; bottom: calc(38px + 2%); left: 50%; transform: translateX(-50%); color: #fff; font-size: 10px; font-weight: 400; letter-spacing: 0.4px; pointer-events: none; white-space: nowrap; display: none; z-index: 5; text-shadow: 0 1px 4px rgba(0,0,0,0.9), 0 0 8px rgba(0,0,0,0.7); }
         .option-bar { position: absolute; top: 10px; left: 50%; transform: translateX(-50%); display: none; gap: 6px; z-index: 6; }
         .option-bar button { padding: 5px 14px; border: 1px solid rgba(255,255,255,0.4); border-radius: 20px; background: rgba(0,0,0,0.55); backdrop-filter: blur(4px); color: #ccc; font-size: 11px; font-weight: 500; cursor: pointer; -webkit-tap-highlight-color: transparent; }
         .option-bar button.active { background: #c9a96e; color: #1a1a1a; border-color: #c9a96e; font-weight: 700; }
@@ -303,6 +304,7 @@
             <div class="image-area" id="imageArea">
                 <img class="room-photo" id="roomPhoto" src="" alt="">
                 <div class="image-label" id="imageLabel"></div>
+                <div class="ai-watermark" id="aiWatermark">Generated with ChatGPT</div>
                 <div class="option-bar" id="optionBar"></div>
                 <div class="reno-overlay" id="renoOverlay">
                     <img class="reno-bg" id="renoBg" src="" alt="">
@@ -511,6 +513,7 @@
         const label = document.getElementById('imageLabel');
         const overlay = document.getElementById('renoOverlay');
         const optionBar = document.getElementById('optionBar');
+        const watermark = document.getElementById('aiWatermark');
         if (!activeRoom) return;
         const r = rooms[activeRoom];
 
@@ -520,6 +523,7 @@
             photo.style.display = 'block';
             label.textContent = 'Original \u2014 ' + r.title;
             label.style.display = 'block';
+            watermark.style.display = 'none';
             overlay.style.display = 'none';
             optionBar.style.display = 'none';
         } else if (activeView === 'staged' && r.stagedImage) {
@@ -528,6 +532,7 @@
             photo.style.display = 'block';
             label.textContent = 'Furnished \u2014 ' + r.title;
             label.style.display = 'block';
+            watermark.style.display = 'block';
             overlay.style.display = 'none';
             optionBar.style.display = 'none';
         } else if (r.renoImages) {
@@ -537,6 +542,7 @@
             photo.style.display = 'block';
             label.textContent = 'Renovated \u2014 ' + r.title + ' \u2014 ' + opt.label;
             label.style.display = 'block';
+            watermark.style.display = 'block';
             overlay.style.display = 'none';
             optionBar.innerHTML = r.renoImages.map((o, i) =>
                 `<button class="${i === activeOption ? 'active' : ''}" onclick="switchOption(${i})">${o.label}</button>`
@@ -548,12 +554,14 @@
             photo.style.display = 'block';
             label.textContent = 'Renovated \u2014 ' + r.title;
             label.style.display = 'block';
+            watermark.style.display = 'block';
             overlay.style.display = 'none';
             optionBar.style.display = 'none';
         } else {
             photo.style.display = 'none';
             label.textContent = 'Renovated \u2014 ' + r.title;
             label.style.display = 'block';
+            watermark.style.display = 'none';
             document.getElementById('renoBg').src = r.image;
             document.getElementById('renoTitle').textContent = r.title + ' \u2014 Renovated';
             const newItems = r.items.filter(([tag]) => tag === 'NEW' || tag === 'GUT');
