@@ -23,16 +23,14 @@
         .login-box .login-error { color: #e74c3c; font-size: 11px; margin-top: 10px; min-height: 16px; }
         @keyframes shake { 0%,100% { transform: translateX(0); } 25% { transform: translateX(-8px); } 75% { transform: translateX(8px); } }
 
-        .app-content { display: none; flex-direction: column; height: 100%; }
-        .app-content.visible { display: flex; }
+        .app-content { display: flex; flex-direction: column; height: 100%; }
 
         .header { background: #1a1a1a; color: #fff; padding: 12px 24px; display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; }
         .header h1 { font-size: 18px; font-weight: 500; letter-spacing: 0.5px; }
         .header .subtitle { font-size: 11px; color: #999; margin-top: 1px; }
         .header .badge { background: #c9a96e; color: #1a1a1a; padding: 4px 12px; border-radius: 3px; font-size: 11px; font-weight: 600; }
 
-        .tab-bar { display: flex; background: #2c2c2c; padding: 0 24px; flex-shrink: 0; }
-        .tab-bar .tab-label { padding: 10px 20px; color: #fff; font-size: 13px; font-weight: 500; border-bottom: 2px solid #c9a96e; }
+        .tab-bar { display: none; }
 
         /* ========== MOBILE ROOM NAV ========== */
         .mobile-room-nav { display: none; background: #2c2c2c; padding: 8px 12px; flex-shrink: 0; overflow-x: auto; white-space: nowrap; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
@@ -40,14 +38,23 @@
         .mobile-room-nav button { display: inline-block; padding: 6px 14px; margin-right: 6px; border: 1px solid #555; border-radius: 20px; background: transparent; color: #ccc; font-size: 12px; font-weight: 500; cursor: pointer; white-space: nowrap; -webkit-tap-highlight-color: transparent; }
         .mobile-room-nav button.active { background: #c9a96e; color: #1a1a1a; border-color: #c9a96e; font-weight: 700; }
 
-        /* ========== 3-Column Layout (Desktop) ========== */
+        /* ========== Layout ========== */
         .main { flex: 1; display: flex; overflow: hidden; }
 
-        /* Column 1: Floor Plan */
-        .col-plan { width: 35%; min-width: 280px; display: flex; flex-direction: column; overflow: hidden; background: #fff; border-right: 1px solid #e0e0e0; }
-        .fp-image-container { position: relative; flex: 1; overflow: hidden; background: #fff; }
-        .fp-image-container img { height: 100%; display: block; object-fit: contain; object-position: left top; }
-        .fp-overlay { position: absolute; top: 0; left: 0; }
+        /* Floor Plan column */
+        .col-plan { flex: 0 0 100%; min-width: 0; display: flex; flex-direction: column; overflow: hidden; background: #fff; transition: flex-basis 0.32s ease; }
+        .main.panel-open .col-plan { flex-basis: 28%; }
+        .main.fp-collapsed .col-plan { flex-basis: 0; overflow: hidden; }
+        .fp-image-container { position: relative; flex: 1; overflow: hidden; background: #fff; display: flex; align-items: center; justify-content: center; }
+        .main.panel-open .fp-image-container { align-items: flex-start; justify-content: flex-start; }
+        .fp-image-container img { max-width: 100%; max-height: 100%; width: auto; height: auto; display: block; }
+        .fp-overlay { position: absolute; top: 0; left: 0; pointer-events: none; }
+        .fp-overlay .fp-hotspot { pointer-events: all; }
+
+        /* << >> divider between panels */
+        .fp-divider { display: none; width: 18px; flex-shrink: 0; background: #e8e8e2; cursor: pointer; align-items: center; justify-content: center; color: #aaa; font-size: 16px; font-weight: 700; border-left: 1px solid #ddd; border-right: 1px solid #ddd; user-select: none; transition: background 0.15s, color 0.15s; }
+        .fp-divider:hover { background: #d8d8d0; color: #555; }
+        .main.panel-open .fp-divider { display: flex; }
 
         .fp-hotspot { position: absolute; cursor: pointer; border: 2px solid transparent; border-radius: 4px; transition: background 0.2s, border-color 0.2s; display: flex; align-items: center; justify-content: center; }
         .fp-hotspot:hover { background: rgba(201,169,110,0.12); border-color: rgba(201,169,110,0.5); }
@@ -81,116 +88,102 @@
         .edit-bar .pos-readout { font-family: 'Consolas', monospace; font-size: 9px; color: #666; flex: 1; }
         .edit-bar button { padding: 3px 8px; border: 1px solid #d4b96e; border-radius: 3px; background: #fff; cursor: pointer; font-size: 9px; color: #8b7340; font-weight: 600; }
 
-        /* Column 2: Room Image */
-        .col-image { flex: 1; min-width: 0; background: #f0efe8; display: flex; flex-direction: column; overflow: hidden; border-right: 1px solid #e0e0e0; }
-        .image-tabs { display: none; background: #2c2c2c; flex-shrink: 0; }
-        .image-tabs.visible { display: flex; }
-        .image-tabs .img-tab { padding: 8px 20px; color: #999; font-size: 12px; font-weight: 500; cursor: pointer; border-bottom: 2px solid transparent; transition: color 0.2s, border-color 0.2s; user-select: none; -webkit-tap-highlight-color: transparent; }
-        .image-tabs .img-tab:hover { color: #ccc; }
-        .image-tabs .img-tab.active { color: #fff; border-bottom-color: #c9a96e; }
-        .image-area { flex: 1; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; min-height: 0; }
-        .image-area .room-photo { width: 100%; height: 100%; object-fit: contain; display: none; }
+        /* ========== ROOM PANEL ========== */
+        .room-panel { flex: 1 1 0; min-width: 0; max-width: 0; display: flex; flex-direction: column; overflow: hidden; background: #fff; transition: max-width 0.32s ease; }
+        .main.panel-open .room-panel { max-width: 100%; }
+        .main.fp-collapsed .room-panel { max-width: 100%; }
+        .main.fp-collapsed .fp-toolbar { display: none; }
+
+        /* Scope & Notes panel — sits below floor plan in left column */
+        .scope-panel { flex-shrink: 0; display: none; flex-direction: column; border-top: 2px solid #e0e0e0; }
+        .scope-panel.visible { display: flex; }
+        .scope-panel-header { padding: 8px 12px; background: #f2f2ee; display: flex; justify-content: space-between; align-items: center; cursor: pointer; user-select: none; flex-shrink: 0; }
+        .scope-panel-header:hover { background: #e8e8e2; }
+        .scope-panel-title { font-size: 11px; font-weight: 700; color: #555; letter-spacing: 0.2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .scope-toggle-arrow { font-size: 10px; color: #888; transition: transform 0.2s; flex-shrink: 0; }
+        .scope-panel.collapsed .scope-toggle-arrow { transform: rotate(180deg); }
+        #notesSection { overflow: hidden; max-height: 320px; transition: max-height 0.3s ease; display: flex; flex-direction: column; }
+        .scope-panel.collapsed #notesSection { max-height: 0; }
+
+        .panel-header { background: #1a1a1a; color: #fff; padding: 14px 16px 12px; display: flex; align-items: flex-start; justify-content: space-between; flex-shrink: 0; }
+        .panel-room-info .room-num { display: inline-block; background: #c9a96e; color: #fff; padding: 2px 8px; border-radius: 3px; font-size: 11px; font-weight: 700; margin-right: 6px; vertical-align: middle; }
+        .panel-room-info h3 { display: inline; font-size: 15px; font-weight: 600; vertical-align: middle; }
+        .panel-room-info .dims { font-size: 11px; color: #888; margin-top: 5px; }
+        .panel-close { background: none; border: 1.5px solid #555; color: #aaa; font-size: 13px; font-weight: 700; cursor: pointer; padding: 4px 10px; border-radius: 4px; line-height: 1; flex-shrink: 0; transition: border-color 0.15s, color 0.15s; }
+        .panel-close:hover { border-color: #aaa; color: #fff; }
+
+        .image-tabs { background: #2c2c2c; flex-shrink: 0; padding: 8px 14px; gap: 8px; display: flex; align-items: center; }
+        .image-tabs .img-tab { padding: 7px 20px; color: #aaa; font-size: 12px; font-weight: 600; cursor: pointer; border-radius: 20px; border: 1.5px solid #555; background: transparent; transition: background 0.18s, color 0.18s, border-color 0.18s; user-select: none; -webkit-tap-highlight-color: transparent; letter-spacing: 0.2px; }
+        .image-tabs .img-tab:hover { color: #fff; border-color: #888; background: rgba(255,255,255,0.07); }
+        .image-tabs .img-tab.active { color: #1a1a1a; background: #c9a96e; border-color: #c9a96e; font-weight: 700; }
+
+        .image-area { flex: 1; min-height: 160px; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; background: #f0efe8; }
+        .image-area .room-photo { max-width: 100%; max-height: 100%; width: auto; height: auto; object-fit: contain; display: none; }
         .image-area .image-label { position: absolute; bottom: 12px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.72); color: #fff; padding: 5px 14px; border-radius: 4px; font-size: 11px; font-weight: 500; letter-spacing: 0.3px; pointer-events: none; white-space: nowrap; display: none; z-index: 5; }
         .option-bar { position: absolute; top: 10px; left: 50%; transform: translateX(-50%); display: none; gap: 6px; z-index: 6; }
         .option-bar button { padding: 5px 14px; border: 1px solid rgba(255,255,255,0.4); border-radius: 20px; background: rgba(0,0,0,0.55); backdrop-filter: blur(4px); color: #ccc; font-size: 11px; font-weight: 500; cursor: pointer; -webkit-tap-highlight-color: transparent; }
         .option-bar button.active { background: #c9a96e; color: #1a1a1a; border-color: #c9a96e; font-weight: 700; }
-        .image-area .image-placeholder { color: #bbb; font-size: 13px; text-align: center; line-height: 1.6; }
         .reno-overlay { position: absolute; inset: 0; display: none; flex-direction: column; }
         .reno-overlay .reno-bg { width: 100%; height: 100%; object-fit: contain; filter: brightness(0.55) saturate(0.4); }
-        .reno-overlay .reno-card { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(26,26,26,0.88); backdrop-filter: blur(6px); border: 1px solid rgba(201,169,110,0.4); border-radius: 8px; padding: 24px 28px; max-width: 420px; width: 85%; color: #fff; }
-        .reno-card h4 { font-size: 14px; font-weight: 600; color: #c9a96e; margin-bottom: 4px; }
-        .reno-card .reno-subtitle { font-size: 10px; color: #999; margin-bottom: 14px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .reno-overlay .reno-card { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(26,26,26,0.88); backdrop-filter: blur(6px); border: 1px solid rgba(201,169,110,0.4); border-radius: 8px; padding: 20px 22px; max-width: 90%; width: 90%; color: #fff; }
+        .reno-card h4 { font-size: 13px; font-weight: 600; color: #c9a96e; margin-bottom: 4px; }
+        .reno-card .reno-subtitle { font-size: 10px; color: #999; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
         .reno-card ul { list-style: none; padding: 0; margin: 0; }
-        .reno-card ul li { font-size: 11px; color: #ddd; padding: 4px 0; border-bottom: 1px solid rgba(255,255,255,0.06); display: flex; align-items: flex-start; gap: 8px; line-height: 1.4; }
+        .reno-card ul li { font-size: 10px; color: #ddd; padding: 4px 0; border-bottom: 1px solid rgba(255,255,255,0.06); display: flex; align-items: flex-start; gap: 8px; line-height: 1.4; }
         .reno-card ul li:last-child { border-bottom: none; }
-        .reno-card ul li .rc-dot { width: 6px; height: 6px; background: #c9a96e; border-radius: 50%; flex-shrink: 0; margin-top: 4px; }
+        .reno-card ul li .rc-dot { width: 6px; height: 6px; background: #c9a96e; border-radius: 50%; flex-shrink: 0; margin-top: 3px; }
 
-        /* Column 3: Description */
-        .col-desc { width: 320px; flex-shrink: 0; background: #fff; display: flex; flex-direction: column; overflow: hidden; }
-        .desc-header { padding: 16px 18px 10px; border-bottom: 1px solid #eee; flex-shrink: 0; }
-        .desc-header .room-num { display: inline-block; background: #c9a96e; color: #fff; padding: 2px 8px; border-radius: 3px; font-size: 11px; font-weight: 700; margin-right: 6px; vertical-align: middle; }
-        .desc-header h3 { display: inline; font-size: 15px; font-weight: 600; vertical-align: middle; }
-        .desc-header .dims { font-size: 11px; color: #888; margin-top: 4px; }
-        .desc-body { flex: 1; overflow-y: auto; }
-        .desc-placeholder { display: flex; align-items: center; justify-content: center; height: 100%; color: #aaa; font-size: 13px; text-align: center; padding: 24px; line-height: 1.6; }
-
+        .desc-body { flex: 1; overflow-y: auto; max-height: 180px; }
         .scope-list { list-style: none; padding: 0; margin: 0; }
-        .scope-list li { padding: 8px 18px; border-bottom: 1px solid #f0f0f0; font-size: 12px; color: #444; display: flex; align-items: flex-start; gap: 7px; line-height: 1.4; }
+        .scope-list li { padding: 8px 16px; border-bottom: 1px solid #f0f0f0; font-size: 12px; color: #444; display: flex; align-items: flex-start; gap: 7px; line-height: 1.4; }
         .scope-list li:last-child { border-bottom: none; }
         .reno-tag { display: inline-block; background: #c9a96e; color: #fff; padding: 1px 5px; border-radius: 3px; font-size: 8px; font-weight: 700; letter-spacing: 0.3px; flex-shrink: 0; margin-top: 2px; }
         .reno-tag.gut { background: #c0392b; }
         .reno-tag.keep { background: #7f8c8d; }
 
-        .desc-notes { padding: 10px 18px; border-top: 1px solid #eee; flex-shrink: 0; }
+        .desc-notes { padding: 10px 16px; border-top: 1px solid #eee; flex-shrink: 0; }
         .desc-notes h4 { font-size: 10px; color: #999; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 5px; }
         .desc-notes textarea { width: 100%; border: 1px solid #e0e0e0; border-radius: 4px; padding: 6px 8px; font-size: 10px; font-family: inherit; resize: none; height: 70px; }
         .desc-notes textarea:focus { outline: none; border-color: #c9a96e; }
 
-        /* ========== TABLET (769–1024px): 2 columns, hide floor plan ========== */
+        /* ========== TABLET (769–1024px) ========== */
         @media (max-width: 1024px) and (min-width: 769px) {
-            .col-plan { display: none; }
-            .mobile-room-nav { display: flex; }
-            .tab-bar { display: none; }
-            .col-desc { width: 300px; }
+            .main.panel-open .col-plan { flex-basis: 32%; }
         }
 
-        /* ========== MOBILE (<= 768px) ========== */
+        /* ========== MOBILE (<= 768px): stacked layout ========== */
         @media (max-width: 768px) {
-            html, body { overflow: auto; height: auto; min-height: 100%; }
             .header { padding: 10px 16px; }
             .header h1 { font-size: 15px; }
             .header .subtitle { font-size: 10px; }
             .header .badge { font-size: 10px; padding: 3px 8px; }
 
-            .tab-bar { display: none; }
-            .mobile-room-nav { display: flex; }
-
-            .main { flex-direction: column; overflow: visible; flex: none; }
-
-            .col-plan { display: none; }
-
-            .col-image { flex: none; width: 100%; height: auto; border-right: none; }
-            .image-tabs .img-tab { flex: 1; text-align: center; padding: 10px 8px; font-size: 13px; }
-            .image-area { height: 56vw; min-height: 220px; max-height: 400px; }
-            .image-area .image-placeholder { font-size: 14px; padding: 20px; }
+            html, body { height: 100%; overflow: hidden; }
+            .main { flex-direction: column; }
+            .col-plan { flex: 0 0 42%; transition: flex-basis 0.32s ease; }
+            .main.panel-open .col-plan { flex-basis: 40%; }
+            .main.fp-collapsed .col-plan { flex-basis: 0; }
+            .fp-divider { display: none !important; }
+            .room-panel { flex: 1 1 0; max-width: 100%; border-left: none; border-top: 1px solid #e0e0e0; min-height: 0; }
+            .main.panel-open .room-panel { max-width: 100%; }
+            .image-tabs .img-tab { flex: 1; text-align: center; padding: 7px 4px; font-size: 11px; }
+            .image-area { flex: 1; min-height: 120px; }
             .image-area .image-label { font-size: 10px; bottom: 8px; padding: 4px 10px; }
-
-            .col-desc { width: 100%; flex: none; overflow: visible; }
-            .desc-header { padding: 14px 16px 8px; }
-            .desc-body { overflow: visible; }
-            .scope-list li { padding: 10px 16px; font-size: 13px; }
-            .desc-notes { padding: 12px 16px; }
-            .desc-notes textarea { height: 80px; font-size: 12px; }
-
-            .reno-card { padding: 16px 18px !important; max-width: 90% !important; }
-            .reno-card h4 { font-size: 13px; }
-            .reno-card ul li { font-size: 10px; }
-
-            .option-bar button { font-size: 12px; padding: 6px 16px; }
+            .scope-list li { padding: 7px 12px; font-size: 11px; }
+            .desc-notes { padding: 8px 12px; }
+            .desc-notes textarea { height: 60px; font-size: 11px; }
+            .option-bar button { font-size: 11px; padding: 5px 12px; }
+            #notesSection { max-height: 220px; }
+            .desc-body { max-height: 120px; }
         }
 
         @media (max-width: 400px) {
             .header { flex-direction: column; align-items: flex-start; gap: 6px; }
             .header .badge { align-self: flex-start; }
-            .mobile-room-nav button { font-size: 11px; padding: 5px 10px; }
-            .image-area { height: 64vw; min-height: 180px; }
         }
     </style>
 </head>
 <body>
-    <!-- Login Screen -->
-    <div class="login-screen" id="loginScreen">
-        <div class="login-box">
-            <div class="login-badge">PRIVATE RENOVATION PLAN</div>
-            <form id="loginForm" onsubmit="return handleLogin(event)">
-                <input type="password" id="loginInput" placeholder="Enter access code" autocomplete="off" autofocus>
-                <button type="submit">Enter</button>
-                <div class="login-error" id="loginError"></div>
-            </form>
-        </div>
-    </div>
-
-    <!-- App Content (hidden until authenticated) -->
     <div class="app-content" id="appContent">
     <div class="header">
         <div>
@@ -199,71 +192,55 @@
         </div>
         <div class="badge">RENOVATION PLAN</div>
     </div>
-    <div class="tab-bar">
-        <div class="tab-label">Floor Plan / Architectural Drawings</div>
-    </div>
-
-    <!-- Mobile / Tablet Room Navigation -->
-    <div class="mobile-room-nav" id="mobileRoomNav">
-        <button data-room="floorplan">0 Floor Plan</button>
-        <button data-room="living">1 Living</button>
-        <button data-room="dining">2 Dining</button>
-        <button data-room="kitchen">3 Kitchen</button>
-        <button data-room="bedroom-primary">4A Primary BR</button>
-        <button data-room="bath-primary">4B Primary Bath</button>
-        <button data-room="bedroom-secondary">5A Secondary BR</button>
-        <button data-room="bath-secondary">5B Secondary Bath</button>
-    </div>
-
     <div class="main">
-        <!-- Column 1: Floor Plan -->
+        <!-- Full-Screen Floor Plan -->
         <div class="col-plan">
             <div class="fp-image-container" id="fpContainer">
-                <img src="floorplan-cropped.png" alt="Existing Conditions - 18th Floor Plan" id="fpImage">
+                <img src="Cropped Floor Plan.png" alt="Existing Conditions - 18th Floor Plan" id="fpImage">
                 <div class="fp-overlay" id="fpOverlay">
-                    <div class="fp-hotspot" data-room="living" data-num="1" style="left:15%;top:7%;width:28%;height:28%;">
+                    <div class="fp-hotspot" data-room="living" data-num="1" style="left:39%;top:7%;width:28%;height:28%;">
                         <div class="fp-marker">1</div>
                         <span class="fp-label">Living Room</span>
                         <div class="resize-handle nw" data-dir="nw"></div><div class="resize-handle n" data-dir="n"></div><div class="resize-handle ne" data-dir="ne"></div>
                         <div class="resize-handle w" data-dir="w"></div><div class="resize-handle e" data-dir="e"></div>
                         <div class="resize-handle sw" data-dir="sw"></div><div class="resize-handle s" data-dir="s"></div><div class="resize-handle se" data-dir="se"></div>
                     </div>
-                    <div class="fp-hotspot" data-room="dining" data-num="2" style="left:37%;top:31%;width:34%;height:14%;">
+                    <div class="fp-hotspot" data-room="dining" data-num="2" style="left:61%;top:31%;width:34%;height:14%;">
                         <div class="fp-marker">2</div>
                         <span class="fp-label">Dining</span>
                         <div class="resize-handle nw" data-dir="nw"></div><div class="resize-handle n" data-dir="n"></div><div class="resize-handle ne" data-dir="ne"></div>
                         <div class="resize-handle w" data-dir="w"></div><div class="resize-handle e" data-dir="e"></div>
                         <div class="resize-handle sw" data-dir="sw"></div><div class="resize-handle s" data-dir="s"></div><div class="resize-handle se" data-dir="se"></div>
                     </div>
-                    <div class="fp-hotspot" data-room="kitchen" data-num="3" style="left:44%;top:47%;width:18%;height:11%;">
+                    <div class="fp-hotspot" data-room="kitchen" data-num="3" style="left:68%;top:47%;width:18%;height:11%;">
                         <div class="fp-marker">3</div>
                         <span class="fp-label">Kitchen</span>
                         <div class="resize-handle nw" data-dir="nw"></div><div class="resize-handle n" data-dir="n"></div><div class="resize-handle ne" data-dir="ne"></div>
                         <div class="resize-handle w" data-dir="w"></div><div class="resize-handle e" data-dir="e"></div>
                         <div class="resize-handle sw" data-dir="sw"></div><div class="resize-handle s" data-dir="s"></div><div class="resize-handle se" data-dir="se"></div>
                     </div>
-                    <div class="fp-hotspot" data-room="bedroom-primary" data-num="4.A" style="left:45%;top:5%;width:28%;height:16%;">
+                    <div class="fp-hotspot" data-room="bedroom-primary" data-num="4.A" style="left:69%;top:5%;width:28%;height:16%;">
                         <div class="fp-marker">4A</div>
                         <span class="fp-label">Primary BR</span>
                         <div class="resize-handle nw" data-dir="nw"></div><div class="resize-handle n" data-dir="n"></div><div class="resize-handle ne" data-dir="ne"></div>
                         <div class="resize-handle w" data-dir="w"></div><div class="resize-handle e" data-dir="e"></div>
                         <div class="resize-handle sw" data-dir="sw"></div><div class="resize-handle s" data-dir="s"></div><div class="resize-handle se" data-dir="se"></div>
                     </div>
-                    <div class="fp-hotspot" data-room="bath-primary" data-num="4.B" style="left:47%;top:18%;width:24%;height:12%;">
+                    <div class="fp-hotspot" data-room="bath-primary" data-num="4.B" style="left:71%;top:18%;width:24%;height:12%;">
                         <div class="fp-marker">4B</div>
                         <span class="fp-label">Primary Bath</span>
                         <div class="resize-handle nw" data-dir="nw"></div><div class="resize-handle n" data-dir="n"></div><div class="resize-handle ne" data-dir="ne"></div>
                         <div class="resize-handle w" data-dir="w"></div><div class="resize-handle e" data-dir="e"></div>
                         <div class="resize-handle sw" data-dir="sw"></div><div class="resize-handle s" data-dir="s"></div><div class="resize-handle se" data-dir="se"></div>
                     </div>
-                    <div class="fp-hotspot" data-room="bedroom-secondary" data-num="5.A" style="left:44%;top:60%;width:30%;height:18%;">
+                    <div class="fp-hotspot" data-room="bedroom-secondary" data-num="5.A" style="left:68%;top:60%;width:30%;height:18%;">
                         <div class="fp-marker">5A</div>
                         <span class="fp-label">Secondary BR</span>
                         <div class="resize-handle nw" data-dir="nw"></div><div class="resize-handle n" data-dir="n"></div><div class="resize-handle ne" data-dir="ne"></div>
                         <div class="resize-handle w" data-dir="w"></div><div class="resize-handle e" data-dir="e"></div>
                         <div class="resize-handle sw" data-dir="sw"></div><div class="resize-handle s" data-dir="s"></div><div class="resize-handle se" data-dir="se"></div>
                     </div>
-                    <div class="fp-hotspot" data-room="bath-secondary" data-num="5.B" style="left:21%;top:47%;width:16%;height:10%;">
+                    <div class="fp-hotspot" data-room="bath-secondary" data-num="5.B" style="left:45%;top:47%;width:16%;height:10%;">
                         <div class="fp-marker">5B</div>
                         <span class="fp-label">Secondary Bath</span>
                         <div class="resize-handle nw" data-dir="nw"></div><div class="resize-handle n" data-dir="n"></div><div class="resize-handle ne" data-dir="ne"></div>
@@ -275,21 +252,53 @@
             <div class="fp-toolbar">
                 <button class="active" onclick="setOverlay('reno')">Renovation Scope</button>
                 <button onclick="setOverlay('none')">Clean Plan</button>
-                <button id="editToggle" style="margin-left:auto; background:#fff8e6; border-color:#d4b96e; color:#8b7340;" onclick="toggleEditMode()">Edit Layout</button>
             </div>
-            <div class="edit-bar" id="editBar">
-                <span style="font-weight:600;">EDIT</span>
-                <span class="pos-readout" id="posReadout"></span>
-                <button onclick="copyPositions()">Copy</button>
-                <button onclick="toggleEditMode()">Done</button>
+            <!-- Scope & Notes — below floor plan, collapsible -->
+            <div class="scope-panel" id="scopePanel">
+                <div class="scope-panel-header" onclick="toggleNotes()">
+                    <span class="scope-panel-title" id="scopePanelTitle">Scope &amp; Notes</span>
+                    <span class="scope-toggle-arrow" id="scopeToggleArrow">▼</span>
+                </div>
+                <div id="notesSection">
+                    <div class="desc-body" id="descBody">
+                        <ul class="scope-list" id="descList"></ul>
+                    </div>
+                    <div class="desc-notes">
+                        <h4>Plan Notes</h4>
+                        <textarea>Summary of key modifications from existing conditions:
+- Kitchen converted to galley layout: seal doorway to dining room, open new doorway to hallway
+- Kitchen: under-cabinet lighting, concealed outlet strip, instant boil faucet, garbage disposal (if permitted)
+- Kitchen: water lines to fridge, sink, and dishwasher
+- Dining room receives partition walls with double sliding doors for flex use as 3rd bedroom
+- All doorway openings adjacent to dining room enlarged to 8' height
+- Primary bathroom: remove existing bathtub, install walk-in shower enclosure
+- Secondary bathroom: install new bathtub with half-wall tempered glass door
+- Electrical panel relocated from kitchen to hallway (between kitchen and secondary bath)
+- Continuous soffits installed throughout for recessed lighting integration
+- Check valves installed on all plumbing supply lines
+- Living room: raise closet header height with 8' swing doors
+- Paint: walls flat white, trim and moldings semi-gloss white (Benjamin Moore throughout)</textarea>
+                    </div>
+                </div>
             </div>
         </div>
 
-        <!-- Column 2: Room Image -->
-        <div class="col-image" id="colImage">
+        <!-- << >> divider -->
+        <div class="fp-divider" id="fpDivider" onclick="toggleFloorPlan()" title="Toggle floor plan"><span id="fpDividerArrow">‹</span></div>
+
+        <!-- Room Panel -->
+        <div class="room-panel" id="roomPanel">
+            <div class="panel-header">
+                <div class="panel-room-info">
+                    <div><span class="room-num" id="descNum"></span><h3 id="descTitle"></h3></div>
+                    <div class="dims" id="descDims"></div>
+                </div>
+                <button class="panel-close" onclick="closePanel()">✕ Close</button>
+            </div>
             <div class="image-tabs" id="imageTabs">
-                <div class="img-tab active" data-view="existing" onclick="switchImageTab('existing')">Existing Conditions</div>
+                <div class="img-tab active" data-view="existing" onclick="switchImageTab('existing')">Original</div>
                 <div class="img-tab" data-view="renovated" onclick="switchImageTab('renovated')">Renovated</div>
+                <div class="img-tab" data-view="staged" id="stagedTab" onclick="switchImageTab('staged')" style="display:none;">Furnished</div>
             </div>
             <div class="image-area" id="imageArea">
                 <img class="room-photo" id="roomPhoto" src="" alt="">
@@ -303,35 +312,6 @@
                         <ul id="renoItems"></ul>
                     </div>
                 </div>
-                <div class="image-placeholder" id="imagePlaceholder">Select a room on the floor plan<br>to view photos &amp; renovation scope</div>
-            </div>
-        </div>
-
-        <!-- Column 3: Description -->
-        <div class="col-desc">
-            <div class="desc-header" id="descHeader" style="display:none;">
-                <div><span class="room-num" id="descNum"></span><h3 id="descTitle"></h3></div>
-                <div class="dims" id="descDims"></div>
-            </div>
-            <div class="desc-body" id="descBody">
-                <div class="desc-placeholder" id="descPlaceholder">Select a room to view<br>renovation scope</div>
-                <ul class="scope-list" id="descList" style="display:none;"></ul>
-            </div>
-            <div class="desc-notes">
-                <h4>Plan Notes</h4>
-                <textarea>Summary of key modifications from existing conditions:
-- Kitchen converted to galley layout: seal doorway to dining room, open new doorway to hallway
-- Kitchen: under-cabinet lighting, concealed outlet strip, instant boil faucet, garbage disposal (if permitted)
-- Kitchen: water lines to fridge, sink, and dishwasher
-- Dining room receives partition walls with double sliding doors for flex use as 3rd bedroom
-- All doorway openings adjacent to dining room enlarged to 8' height
-- Primary bathroom: remove existing bathtub, install walk-in shower enclosure
-- Secondary bathroom: install new bathtub with half-wall tempered glass door
-- Electrical panel relocated from kitchen to hallway (between kitchen and secondary bath)
-- Continuous soffits installed throughout for recessed lighting integration
-- Check valves installed on all plumbing supply lines
-- Living room: raise closet header height with 8' swing doors
-- Paint: walls flat white, trim and moldings semi-gloss white (Benjamin Moore throughout)</textarea>
             </div>
         </div>
     </div>
@@ -339,62 +319,32 @@
     </div><!-- end app-content -->
 
     <script>
-    // ==================== AUTH ====================
-    const HASH = 'c4aaec28342eceb7151103084438b06576a2cf7f15d63cda96b83e2cc70b6ac9';
-
-    async function sha256(str) {
-        const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
-        return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
-    }
-
-    async function handleLogin(e) {
-        e.preventDefault();
-        const input = document.getElementById('loginInput');
-        const hash = await sha256(input.value);
-        if (hash === HASH) {
-            sessionStorage.setItem('auth', '1');
-            showApp();
-        } else {
-            input.classList.add('error');
-            document.getElementById('loginError').textContent = 'Incorrect access code';
-            setTimeout(() => input.classList.remove('error'), 400);
-            input.value = '';
-            input.focus();
-        }
-        return false;
-    }
-
-    function showApp() {
-        document.getElementById('loginScreen').classList.add('hidden');
-        document.getElementById('appContent').classList.add('visible');
-        // Sync overlay after app becomes visible (elements now have dimensions)
-        requestAnimationFrame(() => {
-            syncOverlay();
-            // Double-sync after image loads in case it wasn't cached
-            setTimeout(syncOverlay, 200);
-        });
-    }
-
-    if (sessionStorage.getItem('auth') === '1') showApp();
-
     // ==================== FLOOR PLAN OVERLAY ====================
     function syncOverlay() {
         const img = document.getElementById('fpImage');
         const overlay = document.getElementById('fpOverlay');
-        if (!img || !overlay) return;
-        const w = img.offsetWidth;
-        const h = img.offsetHeight;
-        if (w > 0 && h > 0) {
-            overlay.style.width = w + 'px';
-            overlay.style.height = h + 'px';
-        }
+        const container = document.getElementById('fpContainer');
+        if (!img || !overlay || !container || !img.naturalWidth) return;
+        // Use getBoundingClientRect on the img for exact rendered position/size
+        // (works because img uses max-width/max-height with width/height:auto)
+        const containerRect = container.getBoundingClientRect();
+        const imgRect = img.getBoundingClientRect();
+        if (!imgRect.width || !imgRect.height || !containerRect.width) return;
+        overlay.style.width  = imgRect.width  + 'px';
+        overlay.style.height = imgRect.height + 'px';
+        overlay.style.left   = (imgRect.left - containerRect.left) + 'px';
+        overlay.style.top    = (imgRect.top  - containerRect.top)  + 'px';
     }
     document.getElementById('fpImage').addEventListener('load', syncOverlay);
     window.addEventListener('resize', syncOverlay);
+    // ResizeObserver keeps hotspots aligned during panel open/close transitions
+    const _fpObs = new ResizeObserver(syncOverlay);
+    _fpObs.observe(document.getElementById('fpContainer'));
+    requestAnimationFrame(syncOverlay);
 
     // ==================== ROOM DATA ====================
     const rooms = {
-        living: { num: '1', title: 'Living Room', dims: '12\u201910\u201d \u00d7 21\u20190\u201d \u2014 Ceiling 8\u20197\u201d', image: 'img-living.webp', renoImage: 'img-living-reno.webp', items: [
+        living: { num: '1', title: 'Living Room', dims: '12\u201910\u201d \u00d7 21\u20190\u201d \u2014 Ceiling 8\u20197\u201d', image: 'LivingRoom_Original.jpg', renoImage: 'LivingRoom_Renovated.PNG', stagedImage: 'LivingRoom_Staged.PNG', items: [
             ['NEW','Install 5/8\u201d quarter-sawn and rift-sawn white oak hardwood flooring throughout'],
             ['NEW','Construct continuous soffits with integrated recessed LED lighting'],
             ['NEW','Custom millwork bookshelves beneath windows; center unit conceals existing PTAC'],
@@ -428,7 +378,7 @@
             ['KEEP','Retain existing appliances'],
             ['NEW','Repaint walls and ceiling \u2014 Benjamin Moore, walls flat white, trim and moldings semi-gloss white'],
         ]},
-        'bedroom-primary': { num: '4.A', title: 'Primary Bedroom', dims: '16\u20196\u201d \u00d7 12\u201910\u201d', image: 'img-primary-br.webp', renoImage: 'img-primary-br-reno.webp', items: [
+        'bedroom-primary': { num: '4.A', title: 'Primary Bedroom', dims: '16\u20196\u201d \u00d7 12\u201910\u201d', image: 'Primary_Original.jpg', renoImage: 'Primary_Renovated.PNG', stagedImage: 'Primary_Staged.jpeg', items: [
             ['NEW','Install 5/8\u201d quarter-sawn white oak hardwood flooring'],
             ['NEW','Enlarge entry doorway and install new 8\u2019 door with upgraded frame'],
             ['NEW','Install sliding closet door system'],
@@ -452,7 +402,7 @@
             ['NEW','New rough plumbing \u2014 hot, cold, and waste lines to building riser'],
             ['NEW','Install check valves on all supply lines'],
         ]},
-        'bedroom-secondary': { num: '5.A', title: 'Secondary Bedroom', dims: '13\u201911\u201d \u00d7 13\u20190\u201d', image: 'img-second-br.webp', renoImage: 'img-second-br-reno.webp', items: [
+        'bedroom-secondary': { num: '5.A', title: 'Secondary Bedroom', dims: '13\u201911\u201d \u00d7 13\u20190\u201d', image: 'img-second-br.webp', renoImage: 'Bedroom2_Renovated.PNG', stagedImage: 'Bedroom2_Staged.PNG', items: [
             ['NEW','Install 5/8\u201d quarter-sawn white oak hardwood flooring'],
             ['NEW','Construct soffit with integrated recessed LED lighting'],
             ['NEW','Replace outlets and install dimmer switches'],
@@ -480,57 +430,69 @@
     let activeView = 'existing';
     let activeOption = 0;
 
-    function selectRoom(roomKey) {
-        // Floor plan view (mobile)
-        if (roomKey === 'floorplan') {
-            activeRoom = null;
-            document.querySelectorAll('.fp-hotspot').forEach(h => h.classList.remove('active'));
-            document.querySelectorAll('.mobile-room-nav button').forEach(b => b.classList.toggle('active', b.dataset.room === 'floorplan'));
-            document.getElementById('imageTabs').classList.remove('visible');
-            const photo = document.getElementById('roomPhoto');
-            photo.src = 'floorplan-cropped.png';
-            photo.alt = 'Floor Plan — Existing Conditions';
-            photo.style.display = 'block';
-            document.getElementById('imagePlaceholder').style.display = 'none';
-            document.getElementById('imageLabel').textContent = 'Floor Plan — Existing Conditions';
-            document.getElementById('imageLabel').style.display = 'block';
-            document.getElementById('renoOverlay').style.display = 'none';
-            document.getElementById('optionBar').style.display = 'none';
-            document.getElementById('descHeader').style.display = 'none';
-            document.getElementById('descList').style.display = 'none';
-            document.getElementById('descPlaceholder').style.display = 'flex';
-            return;
-        }
+    function closePanel() {
+        activeRoom = null;
+        const main = document.querySelector('.main');
+        main.classList.remove('panel-open', 'fp-collapsed');
+        fpCollapsed = false;
+        document.getElementById('fpDividerArrow').textContent = '‹';
+        document.querySelectorAll('.fp-hotspot').forEach(h => h.classList.remove('active'));
+        document.getElementById('scopePanel').classList.remove('visible');
+    }
 
+    let fpCollapsed = false;
+    function toggleFloorPlan() {
+        fpCollapsed = !fpCollapsed;
+        document.querySelector('.main').classList.toggle('fp-collapsed', fpCollapsed);
+        document.getElementById('fpDividerArrow').textContent = fpCollapsed ? '›' : '‹';
+    }
+
+    let notesCollapsed = false;
+    function toggleNotes() {
+        notesCollapsed = !notesCollapsed;
+        document.getElementById('scopePanel').classList.toggle('collapsed', notesCollapsed);
+        document.getElementById('scopeToggleArrow').textContent = notesCollapsed ? '▲' : '▼';
+    }
+
+    function selectRoom(roomKey) {
         activeOption = 0;
+        activeView = 'existing';
         activeRoom = roomKey;
         const r = rooms[roomKey];
         if (!r) return;
 
-        // Update desktop hotspots
+        // Reset image tab selection to Original
+        document.querySelectorAll('.img-tab').forEach(t => t.classList.toggle('active', t.dataset.view === 'existing'));
+
+        // Show/hide Furnished tab
+        document.getElementById('stagedTab').style.display = r.stagedImage ? '' : 'none';
+
+        // Highlight active hotspot
         document.querySelectorAll('.fp-hotspot').forEach(h => h.classList.toggle('active', h.dataset.room === roomKey));
 
-        // Update mobile nav
-        document.querySelectorAll('.mobile-room-nav button').forEach(b => b.classList.toggle('active', b.dataset.room === roomKey));
-
-        // Show image tabs
-        document.getElementById('imageTabs').classList.add('visible');
-
-        // Render image
-        document.getElementById('imagePlaceholder').style.display = 'none';
-        renderImageColumn();
-
-        // Update description column
+        // Populate panel header
         document.getElementById('descNum').textContent = r.num;
         document.getElementById('descTitle').textContent = r.title;
         document.getElementById('descDims').textContent = r.dims;
+
+        // Populate scope panel (left column)
+        document.getElementById('scopePanelTitle').textContent = r.title + ' — Scope & Notes';
         document.getElementById('descList').innerHTML = r.items.map(([tag, text]) => {
             const cls = tag === 'GUT' ? 'reno-tag gut' : tag === 'KEEP' ? 'reno-tag keep' : 'reno-tag';
             return `<li><span class="${cls}">${tag}</span> ${text}</li>`;
         }).join('');
-        document.getElementById('descHeader').style.display = 'block';
-        document.getElementById('descList').style.display = 'block';
-        document.getElementById('descPlaceholder').style.display = 'none';
+        // Show scope panel and reset to expanded
+        notesCollapsed = false;
+        const sp = document.getElementById('scopePanel');
+        sp.classList.add('visible');
+        sp.classList.remove('collapsed');
+        document.getElementById('scopeToggleArrow').textContent = '▼';
+
+        // Render photo
+        renderImageColumn();
+
+        // Open panel + resize layout (ResizeObserver handles re-sync automatically)
+        document.querySelector('.main').classList.add('panel-open');
     }
 
     function switchOption(idx) {
@@ -556,7 +518,15 @@
             photo.src = r.image;
             photo.alt = r.title + ' \u2014 Existing Conditions';
             photo.style.display = 'block';
-            label.textContent = 'Existing Conditions \u2014 ' + r.title;
+            label.textContent = 'Original \u2014 ' + r.title;
+            label.style.display = 'block';
+            overlay.style.display = 'none';
+            optionBar.style.display = 'none';
+        } else if (activeView === 'staged' && r.stagedImage) {
+            photo.src = r.stagedImage;
+            photo.alt = r.title + ' \u2014 Furnished';
+            photo.style.display = 'block';
+            label.textContent = 'Furnished \u2014 ' + r.title;
             label.style.display = 'block';
             overlay.style.display = 'none';
             optionBar.style.display = 'none';
